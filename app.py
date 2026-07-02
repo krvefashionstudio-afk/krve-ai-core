@@ -10,25 +10,25 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/")
 def home():
-    return "KRVE AI LIVE 🚀"
+    return "KRVE CORE ENGINE LIVE 🚀"
 
 @app.route("/upload", methods=["POST"])
 def upload():
 
     try:
-        # ✅ SAFE FILE CHECK
-        if "file" not in request.files:
-            return jsonify({"error": "No file sent"}), 400
+        # ✅ SAFE FILE ACCESS (IMPORTANT FIX)
+        file = request.files.get("file")
 
-        file = request.files["file"]
+        if file is None:
+            return jsonify({"error": "No file received"}), 400
 
         if file.filename == "":
-            return jsonify({"error": "Empty file"}), 400
+            return jsonify({"error": "Empty filename"}), 400
 
         path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(path)
 
-        # ✅ ALWAYS SAFE RESPONSE
+        # ✅ RESPONSE (SAFE + ALWAYS WORKS)
         return jsonify({
             "modelUrl": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
             "chest": "38.5 IN",
@@ -39,7 +39,7 @@ def upload():
         })
 
     except Exception as e:
-        print("ERROR:", e)
+        print("BACKEND ERROR:", e)
         return jsonify({"error": "Server crashed"}), 500
 
 
