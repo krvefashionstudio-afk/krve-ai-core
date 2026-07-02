@@ -16,7 +16,6 @@ def home():
 def upload():
 
     try:
-        # ✅ SAFE FILE ACCESS (IMPORTANT FIX)
         file = request.files.get("file")
 
         if file is None:
@@ -28,19 +27,17 @@ def upload():
         path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(path)
 
-        # ✅ RESPONSE (SAFE + ALWAYS WORKS)
         return jsonify({
             "modelUrl": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
             "chest": "38.5 IN",
             "waist": "31.5 IN",
             "hip": "40.2 IN",
-            "size": "KRVE MATCH M",
-            "status": "SUCCESS"
+            "size": "KRVE MATCH M"
         })
 
     except Exception as e:
-        print("BACKEND ERROR:", e)
-        return jsonify({"error": "Server crashed"}), 500
+        print("ERROR:", e)
+        return jsonify({"error": "server crash"}), 500
 
 
 if __name__ == "__main__":
