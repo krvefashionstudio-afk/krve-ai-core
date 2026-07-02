@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -10,19 +12,17 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def home():
     return "KRVE AI Backend is Live 🚀"
 
-# IMAGE UPLOAD API
 @app.route("/upload", methods=["POST"])
-def upload_image():
-    if "file" not in request.files:
-        return jsonify({"error": "No file found"}), 400
-
+def upload():
     file = request.files["file"]
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
+    file.save(os.path.join(UPLOAD_FOLDER, file.filename))
 
     return jsonify({
-        "message": "Image uploaded successfully",
-        "file_path": path
+        "modelUrl": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+        "chest": "92 cm",
+        "waist": "78 cm",
+        "hip": "94 cm",
+        "size": "M"
     })
 
 if __name__ == "__main__":
