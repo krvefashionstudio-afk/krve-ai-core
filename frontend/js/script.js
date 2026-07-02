@@ -1,63 +1,101 @@
-<script>
 window.onload = function () {
 
-  const btn = document.getElementById("scanBtn");
+    const btn = document.getElementById("scanBtn");
 
-  if(!btn){
-    console.log("Button not found");
-    return;
-  }
+    btn.addEventListener("click", async function () {
 
-  btn.addEventListener("click", async function () {
+        const fileInput = document.getElementById("file");
+        const height = document.getElementById("height").value;
 
-    const file = document.getElementById('file').files[0];
-    const height = document.getElementById('height').value;
+        if (fileInput.files.length === 0) {
+            alert("Please upload your photo.");
+            return;
+        }
 
-    if(!file){
-      alert("Upload image first");
-      return;
-    }
+        btn.disabled = true;
+        btn.innerHTML = "KRVE AI SCANNING...";
 
-    btn.innerText = "PROCESSING...";
-    btn.disabled = true;
+        document.getElementById("viewer").innerHTML = `
+            <div style="
+                width:100%;
+                height:720px;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                color:#d4af37;
+                font-size:22px;
+                font-weight:bold;
+            ">
+                AI Cloud Processing...
+            </div>
+        `;
 
-    let formData = new FormData();
-    formData.append('file', file);
-    formData.append('height', height);
+        const formData = new FormData();
+        formData.append("photo", fileInput.files[0]);
+        formData.append("height", height);
 
-    try {
+        try {
 
-      const res = await fetch('https://krve-ai-core.onrender.com/upload', {
-        method: 'POST',
-        body: formData
-      });
+            const response = await fetch("https://krve-ai-core.onrender.com/upload", {
+                method: "POST",
+                body: formData
+            });
 
-      const data = await res.json();
+            if (!response.ok) {
+                throw new Error("Server Error");
+            }
 
-      document.getElementById('viewer').innerHTML =
-        `<model-viewer src="${data.modelUrl}"
-          camera-controls auto-rotate
-          style="width:100%; height:700px; background:#000;">
-        </model-viewer>`;
+            const data = await response.json();
 
-      document.getElementById('metrics').innerHTML =
-        `<h3>AI METRICS</h3>
-         <p>Chest: ${data.chest}</p>
-         <p>Waist: ${data.waist}</p>
-         <p>Hip: ${data.hip}</p>
-         <p><b>${data.size}</b></p>`;
+            document.getElementById("viewer").innerHTML = `
+                <model-viewer
+                    src="${data.modelUrl}"
+                    camera-controls
+                    auto-rotate
+                    shadow-intensity="1"
+                    exposure="1"
+                    environment-image="neutral"
+                    style="
+                        width:100%;
+                        height:720px;
+                        background:#000;
+                    ">
+                </model-viewer>
+            `;
 
-      btn.innerText = "3D MODEL READY ✔️";
-      btn.disabled = false;
+            document.getElementById("metrics").innerHTML = `
+                <h3 style="color:#d4af37;">AI RECONSTRUCTED METRICS</h3>
 
-    } catch (e) {
-      console.log(e);
-      alert("Server error");
-      btn.innerText = "TRY AGAIN";
-      btn.disabled = false;
-    }
+                <p>Chest : <b>${data.chest}</b></p>
 
-  });
+                <p>Waist : <b>${data.waist}</b></p>
+
+                <p>Hip : <b>${data.hip}</b></p>
+
+                <hr>
+
+                <h2 style="color:#00ff99;">
+                    ${data.size}
+                </h2>
+            `;
+
+            btn.innerHTML = "3D HUMAN DIGITAL TWIN READY";
+            btn.disabled = false;
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            alert("Server Error");
+
+            btn.innerHTML = "TRY AGAIN";
+
+            btn.disabled = false;
+
+        }
+
+    });
 
 };
-</script>
