@@ -1,77 +1,63 @@
-const uploadBtn = document.getElementById("uploadBtn");
-const photo = document.getElementById("photo");
-const result = document.getElementById("result");
+<script>
+window.onload = function () {
 
-uploadBtn.addEventListener("click", async () => {
+  const btn = document.getElementById("scanBtn");
 
-    if (photo.files.length === 0) {
-        alert("Please select an image");
-        return;
+  if(!btn){
+    console.log("Button not found");
+    return;
+  }
+
+  btn.addEventListener("click", async function () {
+
+    const file = document.getElementById('file').files[0];
+    const height = document.getElementById('height').value;
+
+    if(!file){
+      alert("Upload image first");
+      return;
     }
 
-    const formData = new FormData();
-    formData.append("image", photo.files[0]);
+    btn.innerText = "PROCESSING...";
+    btn.disabled = true;
 
-    result.innerHTML = "<h2>Analyzing...</h2>";
+    let formData = new FormData();
+    formData.append('file', file);
+    formData.append('height', height);
 
     try {
 
-        const response = await fetch("http://127.0.0.1:5000/api/pose", {
+      const res = await fetch('https://krve-ai-core.onrender.com/upload', {
+        method: 'POST',
+        body: formData
+      });
 
-            method: "POST",
+      const data = await res.json();
 
-            body: formData
+      document.getElementById('viewer').innerHTML =
+        `<model-viewer src="${data.modelUrl}"
+          camera-controls auto-rotate
+          style="width:100%; height:700px; background:#000;">
+        </model-viewer>`;
 
-        });
+      document.getElementById('metrics').innerHTML =
+        `<h3>AI METRICS</h3>
+         <p>Chest: ${data.chest}</p>
+         <p>Waist: ${data.waist}</p>
+         <p>Hip: ${data.hip}</p>
+         <p><b>${data.size}</b></p>`;
 
-        const data = await response.json();
+      btn.innerText = "3D MODEL READY ✔️";
+      btn.disabled = false;
 
-        if (data.status === "success") {
-
-            result.innerHTML = `
-
-            <h2>✅ Pose Detected</h2>
-
-            <h3>Measurements</h3>
-
-            <p>Shoulder Width : ${data.measurements.shoulder_width.toFixed(3)}</p>
-
-            <p>Hip Width : ${data.measurements.hip_width.toFixed(3)}</p>
-
-            <p>Arm Length : ${data.measurements.arm_length.toFixed(3)}</p>
-
-            <p>Leg Length : ${data.measurements.leg_length.toFixed(3)}</p>
-
-            <hr>
-
-            <h3>Body Analysis</h3>
-
-            <p>Body Type : ${data.body_analysis.body_type}</p>
-
-            <p>Ratio : ${data.body_analysis.shoulder_to_hip_ratio}</p>
-
-            <hr>
-
-            <h3>Height Estimation</h3>
-
-            <p>Normalized Height : ${data.height.normalized_height}</p>
-
-            <p>Confidence : ${data.height.confidence}</p>
-
-            `;
-
-        } else {
-
-            result.innerHTML = "<h2>" + data.message + "</h2>";
-
-        }
-
-    } catch (err) {
-
-        console.log(err);
-
-        result.innerHTML = "<h2>Server Error</h2>";
-
+    } catch (e) {
+      console.log(e);
+      alert("Server error");
+      btn.innerText = "TRY AGAIN";
+      btn.disabled = false;
     }
 
-});
+  });
+
+};
+</script>
